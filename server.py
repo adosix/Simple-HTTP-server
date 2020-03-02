@@ -1,5 +1,7 @@
 import socket
 import threading
+
+
 # AF_INET -> Internet address family for IPv4
 # SOCK_STREAM -> socket type for TCP
 sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -13,15 +15,33 @@ sock.listen(1)
 
 connections = []
 
+def error(error_c):
+    codes = {
+        400: "Bad Request",
+        405: "Method Not Allowed"
+    }
+    error_msg = codes.get(error_c, "error")
+    print("ERROR: " + error_msg)
+
+
 def parse(data):
     data = data.split(" ")
-    if len(data) == 1:
-        if data == "POST" or data == "GET":
-            exit(0);
+    if len(data) != 3:
+        if data[0] == "POST" or data[0] == "GET":
+            error(400)
+        else:
+            error(405)
+    else:
+        if data[0] == "POST" or data[0] == "GET":
+            if(data[2] != "HTTP/1.1"):
+                error(400)
+        else:
+            error(405)
+
+
         
     print(len(data))
     print(data[0])
-    print(data[1])
 
 def handler(con,a):
     while True:
@@ -41,4 +61,3 @@ while True:
     con_thread = threading.Thread(target=handler, args=(con,a))
     con_thread.deamon = True
     con_thread.start()
-
