@@ -1,19 +1,23 @@
 import socket
 import threading
+import re
+from urllib.parse import urlparse
 
+import selectors
+sel = selectors.DefaultSelector()
 
 # AF_INET -> Internet address family for IPv4
 # SOCK_STREAM -> socket type for TCP
 sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
 # associate the socket with a specific network interface
-host = '127.0.0.1'
-port = 10007    # range of possible ports   1-65535
+host = socket.gethostname()
+port = 10015    # range of possible ports   1-65535
+
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 sock.bind((host, port))
-
 sock.listen(1)
-
-connections = []
+sel.register(sock, selectors.EVENT_READ, data=None)
 
 def error(error_c):
     codes = {
@@ -22,26 +26,45 @@ def error(error_c):
     }
     error_msg = codes.get(error_c, "error")
     print("ERROR: " + error_msg)
+    exit(error_c)
 
-
-def parse(data):
-    data = data.split(" ")
-    if len(data) != 3:
-        if data[0] == "POST" or data[0] == "GET":
-            error(400)
-        else:
-            error(405)
+def get_req(row):
+    #pattern = re.compile(r"\b" + "\/resolve?name=" + r"\b")
+    #print(row[1])
+    match = re.search(r'^\/resolve\?name=', row[1])
+    if match:
+        url = row[1].split("/resolve?name=",1)[1] 
+        url = url.split("&type=",1)[0] 
+        url_type = row[1].split("&type=",1)[1] 
+        print(socket.getaddrinfo(url, '80'))
+        # from ip to dn GetnameInfo()
+        #row = str.encode(','.join(row))     #data to bytes
+        url = str.encode(url_type)
+        con.send(url)
     else:
-        if data[0] == "POST" or data[0] == "GET":
-            if(data[2] != "HTTP/1.1"):
+        error(400)
+    exit(0)
+
+def parse(data,con):
+    data = data.split('\n\r')
+    for row in data: 
+        row = row.split(' ')
+        if len(row) != 3:
+            if row[0] == "POST" or row[0] == "GET":
+                print(len(data))
                 error(400)
+            else:
+                con.close()
+                error(405)
         else:
-            error(405)
+            if row[0] == "POST" or row[0] == "GET":
+                if row[2] != "HTTP/1.1" or len(data) != 1 and row[0] == "GET":
+                    error(400)
+                elif row[0] == "GET":
+                    get_req(row);
+            else:
+                error(405)
 
-
-        
-    print(len(data))
-    print(data[0])
 
 def handler(con,a):
     while True:
@@ -51,13 +74,17 @@ def handler(con,a):
             break
         data = str(data, 'utf-8')   #data to string
 
-        parse(data);
+        parse(data,con);
+        con.close()
 
-        data = str.encode(data)     #data to bytes
-        con.send(data)
+try:
+    while True:
+        con, a = sock.accept()
+        con_thread = threading.Thread(target=handler, args=(con,a))
+        con_thread.deamon = True
+        con_thread.start()
 
-while True:
-    con, a = sock.accept()
-    con_thread = threading.Thread(target=handler, args=(con,a))
-    con_thread.deamon = True
-    con_thread.start()
+except KeyboardInterrupt:
+    print("caught keyboard interrupt, exiting")
+finally:
+    sel.close()
