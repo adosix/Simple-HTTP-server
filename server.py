@@ -19,16 +19,17 @@ sock.bind((host, port))
 sock.listen(1)
 sel.register(sock, selectors.EVENT_READ, data=None)
 
-def error(error_c):
+def error(error_c, con):
     codes = {
         400: "Bad Request",
         405: "Method Not Allowed"
     }
     error_msg = codes.get(error_c, "error")
+    con.sendall(b'HTTP/1.1 '+ error_c + ' '+ error_msg + '\r\n\r\n')
     print("ERROR: " + error_msg)
     exit(error_c)
 
-def get_req(row):
+def get_req(row, con):
     #pattern = re.compile(r"\b" + "\/resolve?name=" + r"\b")
     #print(row[1])
     match = re.search(r'^\/resolve\?name=', row[1])
@@ -36,13 +37,15 @@ def get_req(row):
         url = row[1].split("/resolve?name=",1)[1] 
         url = url.split("&type=",1)[0] 
         url_type = row[1].split("&type=",1)[1] 
-        print(socket.getaddrinfo(url, '80'))
+
+        print(url)
+        print(url_type)
         # from ip to dn GetnameInfo()
         #row = str.encode(','.join(row))     #data to bytes
         url = str.encode(url_type)
         con.send(url)
     else:
-        error(400)
+        error(400, con)
     exit(0)
 
 def parse(data,con):
@@ -52,18 +55,18 @@ def parse(data,con):
         if len(row) != 3:
             if row[0] == "POST" or row[0] == "GET":
                 print(len(data))
-                error(400)
+                error(400, con)
             else:
                 con.close()
-                error(405)
+                error(405, con)
         else:
             if row[0] == "POST" or row[0] == "GET":
                 if row[2] != "HTTP/1.1" or len(data) != 1 and row[0] == "GET":
                     error(400)
                 elif row[0] == "GET":
-                    get_req(row);
+                    get_req(row, con)
             else:
-                error(405)
+                error(405, con)
 
 
 def handler(con,a):
@@ -74,8 +77,8 @@ def handler(con,a):
             break
         data = str(data, 'utf-8')   #data to string
 
-        parse(data,con);
-        con.close()
+        parse(data,con)
+        con.shutdown()
 
 try:
     while True:
