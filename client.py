@@ -16,3 +16,45 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
      s.sendall(b'GET /resolve?name=apple.com&type=A HTTP/1.1')
      data = s.recv(2048)
      print(repr(data))
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+     s.connect((HOST, PORT))
+     s.sendall(b'GET /resolve?name=www.facebook.com&type=A HTTP/1.1')
+     data = s.recv(2048)
+     print(repr(data))
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+     s.connect((HOST, PORT))
+     s.sendall(b'GET /resolve?name=apple.c om&type=A HTTP/1.1')
+     data = s.recv(2048)
+     print(repr(data))
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+     s.connect((HOST, PORT))
+     s.sendall(b'GET /resolve?name=apple.cofm&type=A HTTP/1.1')
+     data = s.recv(2048)
+     print(repr(data))
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+     s.connect((HOST, PORT))
+     s.sendall(b'GET /resolve?name=appdle.com&type=A HTTP/1.1')
+     data = s.recv(2048)
+     print(repr(data))
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+     s.connect((HOST, PORT))
+     s.sendall(b'GET /resolve?name=w.apple.com&type=A HTTP/1.1')
+     data = s.recv(2048)
+     print(repr(data))
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+     s.connect((HOST, PORT))
+     s.sendall(b'GET /resolve?name=f.apple.com&type=A HTTP/1.1')
+     data = s.recv(2048)
+     print(repr(data))
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+     s.connect((HOST, PORT))
+     s.sendall(b'GET /resolve?name=aa-apple.com&type=A HTTP/1.1')
+     data = s.recv(2048)
+     print(repr(data))

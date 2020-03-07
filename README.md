@@ -4,7 +4,7 @@ author: Andrej Ježík
 ### Implementation details
 As a language for implementation I have chosen Python version 3.8 because of its huge number of libraries for this purpose. <br>
 Server runs on the local host (127.0.0.1) and the port is specified as an argument when the server is started.<br>
-Server accepts 2 requests which are 
+Server accepts 2 requests
 ##### POST
 form: POST /dns-query HTTP/1.1 <br>
 where: <br> 
@@ -38,8 +38,10 @@ I have used module socket which provides low-level networking interface which wa
 
 ##### threading
 I have used multithreading to allow  multiple connections to be established and the same time, one thread = one connection. To achieve this I have used module called threading.
+
 ##### re
 For pasing and checking requests, especialy URLs I have used regexes among other methods. For this purpose I have imported module re. 
+
 ##### sys
 Accepting PORT as an argument was required so I have use module sys to be able to check arguments and also use them for specifying on which PORT the server will be listening.
 

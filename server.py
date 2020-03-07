@@ -125,11 +125,12 @@ def post_req(row, con):
  # @param   $con    :current connection
 def parse(data,con):
     match = re.search(r' HTTP/1.1', data)
+    http_flag = True
     if match:
         data = data.split("HTTP/1.1",1)[0] + "HTTP/1.1\r\n\r\n"+ data.split("HTTP/1.1",1)[1]
         data = data.split('\r\n\r\n')
     else:
-        error(400, con)
+        http_flag = False
 
     row = data[0]
     row = row.split(' ')
@@ -138,6 +139,8 @@ def parse(data,con):
             error(400, con)
         else:
             error(405, con)
+    elif not http_flag:
+        error(400,con)
     else:
         if row[0] != "POST" and row[0] != "GET":
             error(405, con)
@@ -179,12 +182,13 @@ def start_server():
     # associate the socket with a specific network interface
     host = '127.0.0.1'
 
+    # check correct number of arguments
     if len(sys.argv) != 2:
             print(sys.stderr, "Invalid number of arguments")
             exit(-1)
-
+    # sssign argument to port
     port = int(sys.argv[1])
-    # Check if port is uint16
+    # check if port is uint16
     if port > 65535 or port <= 0:
         print(sys.stderr, "Invalid PORT")
         exit(-2)
